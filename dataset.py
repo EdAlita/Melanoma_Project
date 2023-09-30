@@ -37,7 +37,7 @@ class binaryDataset():
         info = f"# of images: {len(self.array)} in color space {self.color_space}, with shape {self.shape}. \n Preprocessed with so far using {self.preprocessor}."
         return info
     
-    def read(self, root = None, size = (128, 128), color_space = 'RGB', shuffle =False, should_save = True):
+    def read(self, root = None, size = (128, 128), color_space = 'RGB', shuffle =True, should_save = True):
         
         if root is None:
             raise ValueError("Please provide a valid root directory.")
@@ -60,6 +60,8 @@ class binaryDataset():
                         image = cv.imread(image_path)
                         image = cv.resize(image, size)
 
+                        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+
                         if color_space == 'RGB':
                             # Do nothing.
                             pass
@@ -76,11 +78,14 @@ class binaryDataset():
                         else:
                             raise NotImplementedError()
                         
-                        data.append([image, label, file_name])
+                        fname, jpg = file_name.split('.')
+                        data.append([image, label, fname])
 
         self.ordered_images = data
         array = np.array(data, dtype=object)
-        np.random.shuffle(array)
+
+        if shuffle:
+            np.random.shuffle(array)
 
         if should_save:
 
@@ -156,6 +161,6 @@ class binaryDataset():
 
 if __name__ == '__main__':
 
-    dataset = binaryDataset(color_space='LAB')
+    dataset = binaryDataset(color_space='RGB')
 
     dataset.plot()
