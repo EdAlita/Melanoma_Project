@@ -1,6 +1,6 @@
 
 from typing import Any
-from PIL import Image
+import cv2 as cv
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,7 +25,7 @@ class binaryDataset():
         shape = (img_size[0], img_size[1], n_channels)
         self.shape = shape
 
-        self.ordered_pillows = []
+        self.ordered_images = []
         self.array = self.read(root = root, size = self.size, color_space = self.color_space, shuffle =True, should_save=True)
 
 
@@ -52,23 +52,33 @@ class binaryDataset():
             if os.path.isdir(class_path):
                 label = class_folder
 
-                for file_name in tqdm(os.listdir(class_path), desc=str(label)):
+                for file_name in tqdm(set(os.listdir(class_path)), desc=str(label)):
                     if file_name.endswith('.jpg'):
                         image_path = os.path.join(class_path, file_name)
 
                         # Open and resize image
-                        image = Image.open(image_path)
-                        image = image.resize(size)
+                        image = cv.imread(image_path)
+                        image = cv.resize(image, size)
 
                         if color_space == 'RGB':
                             # Do nothing.
                             pass
+
+                        elif color_space == 'HSV':
+                            image = cv.cvtColor(image, cv.COLOR_RGB2HSV)
+
+                        elif color_space == 'GRAY':
+                            image = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
+
+                        elif color_space == 'LAB':
+                            image = cv.cvtColor(image, cv.COLOR_RGB2LAB)
+
                         else:
                             raise NotImplementedError()
                         
                         data.append([image, label, file_name])
 
-        self.ordered_pillows = data
+        self.ordered_images = data
         array = np.array(data, dtype=object)
         np.random.shuffle(array)
 
@@ -92,11 +102,11 @@ class binaryDataset():
 
         return self.images
     
-    def plot(self, random=True, size=10, color_space='RGB'):
+    def plot(self, random=True, size=5, color_space='None', ch=0):
         if random:
-            indices = np.random.randint(len(self.ordered_pillows), size=size)
+            indices = np.random.randint(len(self.ordered_images), size=size)
         else:
-            indices = np.arange(min(size, len(self.ordered_pillows)))
+            indices = np.arange(min(size, len(self.ordered_images)))
 
         num_rows = size // 5  # Assuming you want 5 columns per row
 
@@ -104,13 +114,39 @@ class binaryDataset():
         axes = axes.ravel()
 
         for i, index in enumerate(indices):
-            image, label, file_name = self.ordered_pillows[index]
+            image, label, file_name = self.ordered_images[index]
 
             # Convert image to specified color space
-            if color_space != 'RGB':
+            if color_space != 'None':
                 raise NotImplementedError
 
             axes[i].imshow(image)
+            axes[i].set_title(f'Label: {label}\nFile Name: {file_name}')
+            axes[i].axis('off')
+
+        fig, axes = plt.subplots(num_rows, 5, figsize=(15, 3*num_rows))
+        axes = axes.ravel()
+
+        for i, index in enumerate(indices):
+            image, label, file_name = self.ordered_images[index]
+
+            # Convert image to specified color space
+            if color_space != 'None':
+                raise NotImplementedError
+
+            # Let's have a look at the H channel.
+            # Split the image into its RGB channels
+            ch1, ch2, ch3 = cv.split(image)
+
+            # Calculate the histograms
+            hist_ch1 = cv.calcHist([ch1], [0], None, [256], [0, 256])
+            hist_ch2 = cv.calcHist([ch2], [0], None, [256], [0, 256])
+            hist_ch3 = cv.calcHist([ch3], [0], None, [256], [0, 256])
+
+            # Plot the histograms
+            axes[i].plot(hist_ch1, color='pink')
+            axes[i].plot(hist_ch2, color='orange')
+            axes[i].plot(hist_ch3, color='brown')
             axes[i].set_title(f'Label: {label}\nFile Name: {file_name}')
             axes[i].axis('off')
 
@@ -118,9 +154,8 @@ class binaryDataset():
         plt.show()
 
 
-
 if __name__ == '__main__':
 
-    dataset = binaryDataset()
+    dataset = binaryDataset(color_space='LAB')
 
     dataset.plot()
