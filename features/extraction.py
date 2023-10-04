@@ -2,6 +2,7 @@ import numpy as np
 from tqdm import tqdm
 import pandas as pd 
 from extractors.color import color
+from extractors.texture import glcm
 
 def extract_features(stack, descriptors=None, save=True, feature_dir="features/all/"):
 
@@ -52,7 +53,7 @@ def extract_features(stack, descriptors=None, save=True, feature_dir="features/a
 
 
     if save:
-        filename = feature_dir + 'features_hsv.csv'
+        filename = feature_dir + 'features_train_HSV_GLCM.csv'
         dataframe.to_csv(filename, index=False)
 
     return dataframe
@@ -82,6 +83,6 @@ if __name__ == '__main__':
 
     # dataframe = extract_features(stack, descriptors=[color.color_statistics, color.color_hist_bins])
 
-    dataset = binaryDataset(color_space='HSV')
+    dataset = binaryDataset(color_space='RGB',root='data/train/')
 
-    dataframe = extract_features(dataset.ordered_images, descriptors=[color.color_statistics, color.color_hist_bins])
+    dataframe = extract_features(dataset.ordered_images, descriptors=[color.color_statistics, color.color_hist_bins, glcm.calculate_glcms])

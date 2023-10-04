@@ -2,9 +2,10 @@ from skimage.feature import graycomatrix, graycoprops
 import cv2 as cv
 import numpy as np
 
-def calculate_glcms( image, distances = [8,16,32], angles = [0,np.pi/4,np.pi/2,3*np.pi/4], properties = ['Contrast','Similarity','Homogeneity','Energy','Correlation']):
+def calculate_glcms( image, distances = [8,16,32], angles = [0,np.pi/4,np.pi/2,3*np.pi/4], properties = ['contrast','dissimilarity','homogeneity','energy','correlation','ASM']):
     
     fos = {}
+    angle_label = [0,45,90,135]
     
     gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
     
@@ -16,11 +17,11 @@ def calculate_glcms( image, distances = [8,16,32], angles = [0,np.pi/4,np.pi/2,3
             glcms.append(glcm)
     
     for i, glcm in enumerate(glcms):
-        distance = distance[i // len(angle)]
-        angle = angles[i % len(angles)]
+        distance = distances[i // len(angles)]
+        angle = angle_label[i % len(angles)]
         for prop in properties:
-            feature = graycoprops(glcm, prop)
-            fos[f'{distance}_{angle}_{properties}'] = feature
+            feature = graycoprops(glcm,prop).flat
+            fos[f'{prop}_{angle}_{distance}'] = feature
             
     return fos
     
