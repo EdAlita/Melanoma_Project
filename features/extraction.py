@@ -52,7 +52,7 @@ def extract_features(stack, descriptors=None, save=True, feature_dir="features/a
 
 
     if save:
-        filename = feature_dir + 'features.csv'
+        filename = feature_dir + 'features_hsv.csv'
         dataframe.to_csv(filename, index=False)
 
     return dataframe
@@ -82,6 +82,6 @@ if __name__ == '__main__':
 
     # dataframe = extract_features(stack, descriptors=[color.color_statistics, color.color_hist_bins])
 
-    dataset = binaryDataset(color_space='RGB')
+    dataset = binaryDataset(color_space='HSV')
 
     dataframe = extract_features(dataset.ordered_images, descriptors=[color.color_statistics, color.color_hist_bins])

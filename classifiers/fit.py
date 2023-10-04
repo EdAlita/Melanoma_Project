@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
     from sklearn.model_selection import train_test_split
 
-    data = pd.read_csv('./features/all/features.csv')
+    data = pd.read_csv('./features/all/features_hsv.csv')
 
     category_mapping = {'nevus': 1, 'others': 0}
     y =  data['label'].astype('category').map(category_mapping)
