@@ -20,8 +20,7 @@ def calculate_glcms( image, distances = [8,16,32], angles = [0,np.pi/4,np.pi/2,3
         distance = distances[i // len(angles)]
         angle = angle_label[i % len(angles)]
         for prop in properties:
-            feature = graycoprops(glcm,prop).flat
-            fos[f'{prop}_{angle}_{distance}'] = feature
+            fos[f'{prop}_{angle}_{distance}'] = graycoprops(glcm,prop).flat[0]
             
     return fos
     
