@@ -1,4 +1,6 @@
 import numpy as np
+import pickle
+from time import gmtime, strftime
 
 from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, average_precision_score, f1_score, cohen_kappa_score, recall_score, log_loss
 from sklearn.metrics import make_scorer
@@ -37,6 +39,7 @@ import pandas as pd
 from tqdm import tqdm
 import re
 
+time = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
 
 classifiers = [
                 # LogisticRegression(solver='saga', penalty='elasticnet', l1_ratio=0.5, max_iter=200),
@@ -176,4 +179,9 @@ if __name__ == "__main__":
     average_of_test_scores = {key: sum_val / len(list_of_test_scores) for key, sum_val in sum_dict.items()}
 
     print(average_of_test_scores)
+    
+    
+    with open(f'classifiers/models/{time}_modelKn.pickle', 'wb') as fp:
+        tqdm(pickle.dump(classifiers,fp),desc='Saving the model.....')
+        fp.close()
 
