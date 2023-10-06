@@ -1,12 +1,29 @@
 import numpy as np
 import cv2 as cv
 
-def shaṕe_measurements(image):
+def shaṕe_measurements(image,color_space='RGB'):
     fos = {}
+    
     Area,Perimeter = 0,0
-    gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-    ret, thresh = cv.thresholding(gray,127,255,0)
-    countours, hierarchy = cv.findCountours(cv.findContours(thresh, 1, 2))
+    
+    if color_space == 'RGB':
+        gray = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
+        pass
+    elif color_space == 'HSV':
+        tmp = cv.cvtColor(image, cv.COLOR_HSV2RGB)
+        gray = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
+
+    elif color_space == 'GRAY':
+        pass
+    elif color_space == 'LAB':
+        tmp = cv.cvtColor(image, cv.COLOR_LAB2RGB)
+        gray = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
+
+    else:
+        raise NotImplementedError()
+    
+    ret, thresh = cv.threshold(gray,127,255,0)
+    countours, hierarchy = cv.findContours(thresh, 1, 2)
     
     for cnt in countours:    
         Area =+ cv.contourArea(cnt)

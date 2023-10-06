@@ -85,4 +85,4 @@ if __name__ == '__main__':
 
     dataset = binaryDataset(color_space='HSV')
 
-    dataframe = extract_features(dataset.ordered_images, descriptors=[color.color_statistics, color.color_hist_bins, glcm.calculate_glcms])
+    dataframe = extract_features(dataset.ordered_images, descriptors=[color.color_statistics, color.color_hist_bins, glcm.calculate_glcms(color_space='HSV')])
