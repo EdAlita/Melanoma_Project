@@ -1,0 +1,2 @@
+,fit_time,score_time,test_accuracy_score,test_cross_entropy_loss,test_average_precision_score,test_cohen_kappa_score,test_f1_score,test_recall_score,test_roc_auc_score,test_specificity_score
+KNeighborsClassifier(n_neighbors=1),0.35778512954711916,0.25900585651397706,0.684376569363201,11.376221535356843,0.6347375267881545,0.3688950936345239,0.6843199927202314,0.684376569363201,0.6845407201254572,0.6944001230742182

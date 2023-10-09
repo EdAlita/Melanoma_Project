@@ -1,4 +1,6 @@
 import numpy as np
+import pickle
+from time import gmtime, strftime
 
 from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, average_precision_score, f1_score, cohen_kappa_score, recall_score, log_loss
 from sklearn.metrics import make_scorer
@@ -37,6 +39,7 @@ import pandas as pd
 from tqdm import tqdm
 import re
 
+time = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
 
 classifiers = [
                 # LogisticRegression(solver='saga', penalty='elasticnet', l1_ratio=0.5, max_iter=200),
@@ -44,8 +47,8 @@ classifiers = [
                 # LogisticRegression(penalty='l2', max_iter=200),
                 # ExtraTreesClassifier(criterion='entropy', n_estimators=100, random_state=0),
                 # GaussianProcessClassifier(kernel=1.0 * RBF(1.0), random_state=0),
-                # KNeighborsClassifier(1),
-                SVC(kernel="rbf", C=1),
+                KNeighborsClassifier(1),
+                # SVC(kernel="rbf", C=1),
                 # SVC(gamma='auto', C=1),   
                 # DecisionTreeClassifier(criterion='entropy', max_depth=20),
                 # RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
@@ -120,11 +123,11 @@ def eval_classifiers(X, y, **kwargs):
             mean_res.loc[clf_key, key] = np.mean(cv_scores[key])
             std_res.loc[clf_key, key] = np.std(cv_scores[key])
     
-    filename = f'classifiers/results/color_mean.csv'
+    filename = f'classifiers/results/train_color_texture_mean_Kn.csv'
 
     mean_res.to_csv(filename)
 
-    filename = f'classifiers/results/color_std.csv'
+    filename = f'classifiers/results/train_colort_texture_std_Kn.csv'
 
     std_res.to_csv(filename)
     
@@ -134,7 +137,7 @@ if __name__ == "__main__":
 
     from sklearn.model_selection import train_test_split
 
-    data = pd.read_csv('./features/all/features_hsv.csv')
+    data = pd.read_csv('./features/all/features_train_HSV_GLCM.csv')
 
     category_mapping = {'nevus': 1, 'others': 0}
     y =  data['label'].astype('category').map(category_mapping)
@@ -176,4 +179,9 @@ if __name__ == "__main__":
     average_of_test_scores = {key: sum_val / len(list_of_test_scores) for key, sum_val in sum_dict.items()}
 
     print(average_of_test_scores)
+    
+    
+    with open(f'classifiers/models/{time}_modelKn.pickle', 'wb') as fp:
+        tqdm(pickle.dump(classifiers,fp),desc='Saving the model.....')
+        fp.close()
 
