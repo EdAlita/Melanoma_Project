@@ -1,3 +1,9 @@
 data/
 features/extractors/color/__pycache__/color.cpython-310.pyc
 __pycache__/dataset.cpython-310.pyc
+processors/tools/__pycache__/*
+processors/__pycache__/*
+notebooks/tmp_mask.png
+.gitignore
+notebooks/coins.png
+notebooks/tmp_orig.png
