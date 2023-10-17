@@ -14,7 +14,7 @@ from patch_based_inpainting.inpaint import *
 
 def preprocess(path, save = True, out_dir = 'data/preprocessed/val/', mask_dir = 'data/hair/val/', show = True, ralg = 'telea'):
     
-    lname, fname = path.split('\\')[-2:]
+    lname, fname = path.split('/')[-2:]
     
     # print("NAME", lname, fname)
     # Step 0.
@@ -128,24 +128,24 @@ def preprocess(path, save = True, out_dir = 'data/preprocessed/val/', mask_dir =
     return dst
 
 
-from tqdm import tqdm 
+# from tqdm import tqdm 
 
-# define the directory path
-directory_path = "./data/val"
-print(os.listdir(directory_path))
-# initialize an empty list to store the file paths
-file_paths = []
+# # define the directory path
+# directory_path = "./data/val"
+# print(os.listdir(directory_path))
+# # initialize an empty list to store the file paths
+# file_paths = []
 
-# iterate through the files in the directory
-for folder in os.listdir(directory_path):
-    for filename in os.listdir(os.path.join(directory_path, folder)):
-        # check if the entry is a file (not a directory)
-        if os.path.isfile(os.path.join(directory_path, folder, filename)):
-            # construct the full path and add it to the list
-            file_path = os.path.join(directory_path, folder, filename)
-            # print(file_path)
-            file_paths.append(file_path)
+# # iterate through the files in the directory
+# for folder in os.listdir(directory_path):
+#     for filename in os.listdir(os.path.join(directory_path, folder)):
+#         # check if the entry is a file (not a directory)
+#         if os.path.isfile(os.path.join(directory_path, folder, filename)):
+#             # construct the full path and add it to the list
+#             file_path = os.path.join(directory_path, folder, filename)
+#             # print(file_path)
+#             file_paths.append(file_path)
 
-# run loop 
-for path in tqdm(file_paths):
-    preprocess(path, ralg = 'telea', show=False, save=True, out_dir = 'data/preprocessed/val/')
+# # run loop 
+# for path in tqdm(file_paths):
+#     preprocess(path, ralg = 'telea', show=False, save=True, out_dir = 'data/preprocessed/val/')
