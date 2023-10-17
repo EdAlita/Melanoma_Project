@@ -37,7 +37,7 @@ cv_metrics = {
 
 if __name__ == '__main__': 
     
-    data = pd.read_csv('./features/all/features_validation_HSV_GLCM_shape.csv')
+    data = pd.read_csv('./features/all/features_val_HSV_GLCM_shape.csv')
 
     category_mapping = {'nevus': 1, 'others': 0}
     y =  data['label'].astype('category').map(category_mapping)
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
     
-    with open('classifiers/models/2023-10-06_13:19:33_modelKn.pickle','rb') as fp:
+    with open('classifiers/models/2023-10-17_15:18:22_modelKn.pickle','rb') as fp:
         try:
             with tqdm(desc='Loading the saved classifier.....'):
                 estimators= pickle.load(fp)
