@@ -22,15 +22,22 @@ def shape_measurements(image,color_space='HSV'):
     else:
         raise NotImplementedError()
     
-    ret, thresh = cv.threshold(gray,127,255,0)
+    ch1, ch2, ch3 = cv.split(image)
+    
+    ret, thresh = cv.threshold(ch2,0,127,0)
     countours, hierarchy = cv.findContours(thresh, 1, 2)
     
     for cnt in countours:    
         Area =+ cv.contourArea(cnt)
         Perimeter =+ cv.arcLength(cnt,True)
-        
-    fos['Dispersity'] = Perimeter**2/Area
-    fos['Saturation'] = Area/Perimeter
-    fos['Roundness']  = 4*np.pi*Area/Perimeter**2
+    
+    if Area == 0:
+        fos['Dispersity'] = 0
+        fos['Saturation'] = 0
+        fos['Roundness']  = 0 
+    else:    
+        fos['Dispersity'] = Perimeter**2/Area
+        fos['Saturation'] = Area/Perimeter
+        fos['Roundness']  = 4*np.pi*Area/Perimeter**2
 
     return fos

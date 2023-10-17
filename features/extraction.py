@@ -84,6 +84,6 @@ if __name__ == '__main__':
 
     # dataframe = extract_features(stack, descriptors=[color.color_statistics, color.color_hist_bins])
 
-    dataset = binaryDataset(color_space='HSV')
+    dataset = binaryDataset(color_space='HSV',root='data/train/')
 
     dataframe = extract_features(dataset.ordered_images, descriptors=[color.color_statistics, color.color_hist_bins, glcm.calculate_glcms, shape.shape_measurements])
