@@ -3,6 +3,7 @@ from tqdm import tqdm
 import pandas as pd 
 from extractors.color import color
 from extractors.texture import glcm
+from extractors.shape import shape
 
 def extract_features(stack, descriptors=None, save=True, feature_dir="features/all/"):
 
@@ -85,4 +86,4 @@ if __name__ == '__main__':
 
     dataset = binaryDataset(color_space='HSV')
 
-    dataframe = extract_features(dataset.ordered_images, descriptors=[color.color_statistics, color.color_hist_bins, glcm.calculate_glcms(color_space='HSV')])
+    dataframe = extract_features(dataset.ordered_images, descriptors=[color.color_statistics, color.color_hist_bins, glcm.calculate_glcms, shape.shape_measurements])

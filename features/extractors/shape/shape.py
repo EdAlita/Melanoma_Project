@@ -1,7 +1,7 @@
 import numpy as np
 import cv2 as cv
 
-def shaṕe_measurements(image,color_space='RGB'):
+def shape_measurements(image,color_space='HSV'):
     fos = {}
     
     Area,Perimeter = 0,0
