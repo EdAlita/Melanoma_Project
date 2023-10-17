@@ -13,7 +13,7 @@ def pearson_correlation(x, y):
 
     return corr / norm
 
-def color_statistics(image, color_space = 'RGB'):
+def color_statistics(image, color_space = 'HSV'):
 
     """ 
     Outputs first order statistics of an image. 
@@ -28,7 +28,21 @@ def color_statistics(image, color_space = 'RGB'):
 
     fos = {}
 
-    gray = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
+    if color_space == 'RGB':
+        gray = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
+        pass
+    elif color_space == 'HSV':
+        tmp = cv.cvtColor(image, cv.COLOR_HSV2RGB)
+        gray = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
+
+    elif color_space == 'GRAY':
+        pass
+    elif color_space == 'LAB':
+        tmp = cv.cvtColor(image, cv.COLOR_LAB2RGB)
+        gray = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
+
+    else:
+        raise NotImplementedError()
 
     fos['contrast'] = np.std(gray)
 
@@ -64,7 +78,7 @@ def color_statistics(image, color_space = 'RGB'):
 
     return fos
 
-def color_hist_bins(image, n_bins = 256, color_space = 'RGB'):
+def color_hist_bins(image, n_bins = 256, color_space = 'HSV'):
 
     channels = cv.split(image)
 

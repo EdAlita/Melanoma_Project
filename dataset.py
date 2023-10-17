@@ -154,6 +154,31 @@ class binaryDataset():
             axes[i].plot(hist_ch3, color='brown')
             axes[i].set_title(f'Label: {label}\nFile Name: {file_name}')
             axes[i].axis('off')
+            
+            
+        fig, ax = plt.subplots(3, 5, figsize=(15, 3*3))
+
+        for i, index in enumerate(indices):
+            image, label, file_name = self.ordered_images[index]
+
+            # Convert image to specified color space
+            if color_space != 'None':
+                raise NotImplementedError
+
+            # Let's have a look at the H channel.
+            # Split the image into its RGB channels
+            ch1, ch2, ch3 = cv.split(image)
+            
+            ax[0,i].imshow(ch1)
+            ax[0,i].set_title(f'Label: {label}\nFile Name: {file_name} ch1')
+            ax[0,i].axis('off')
+            ax[1,i].imshow(ch2)
+            ax[1,i].set_title(f'Label: {label}\nFile Name: {file_name} ch2')
+            ax[1,i].axis('off')
+            ax[2,i].imshow(ch3)
+            ax[2,i].set_title(f'Label: {label}\nFile Name: {file_name} ch3')
+            ax[2,i].axis('off')
+            
 
         plt.tight_layout()
         plt.show()
@@ -161,6 +186,6 @@ class binaryDataset():
 
 if __name__ == '__main__':
 
-    dataset = binaryDataset(color_space='RGB')
+    dataset = binaryDataset(color_space='HSV')
 
     dataset.plot()

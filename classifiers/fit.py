@@ -48,8 +48,8 @@ classifiers = [
                 # ExtraTreesClassifier(criterion='entropy', n_estimators=100, random_state=0),
                 # GaussianProcessClassifier(kernel=1.0 * RBF(1.0), random_state=0),
                 KNeighborsClassifier(1),
-                # SVC(kernel="rbf", C=1),
-                # SVC(gamma='auto', C=1),   
+                SVC(kernel="rbf", C=1),
+                SVC(gamma='auto', C=1),   
                 # DecisionTreeClassifier(criterion='entropy', max_depth=20),
                 # RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
                 # BernoulliNB(),
@@ -123,11 +123,11 @@ def eval_classifiers(X, y, **kwargs):
             mean_res.loc[clf_key, key] = np.mean(cv_scores[key])
             std_res.loc[clf_key, key] = np.std(cv_scores[key])
     
-    filename = f'classifiers/results/train_color_texture_mean_Kn.csv'
+    filename = f'classifiers/results/train_color_texture_shape_mean_test.csv'
 
     mean_res.to_csv(filename)
 
-    filename = f'classifiers/results/train_colort_texture_std_Kn.csv'
+    filename = f'classifiers/results/train_colort_texture_shape_std_test.csv'
 
     std_res.to_csv(filename)
     
@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
     from sklearn.model_selection import train_test_split
 
-    data = pd.read_csv('./features/all/features_train_HSV_GLCM.csv')
+    data = pd.read_csv('./features/all/features_train_HSV_GLCM_shape.csv')
 
     category_mapping = {'nevus': 1, 'others': 0}
     y =  data['label'].astype('category').map(category_mapping)
