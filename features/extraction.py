@@ -54,7 +54,7 @@ def extract_features(stack, descriptors=None, save=True, feature_dir="features/a
 
 
     if save:
-        filename = feature_dir + 'features_validation_HSV_GLCM.csv'
+        filename = feature_dir + 'features_train_HSV_GLCM_shape.csv'
         dataframe.to_csv(filename, index=False)
 
     return dataframe

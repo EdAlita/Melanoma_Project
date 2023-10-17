@@ -37,7 +37,7 @@ cv_metrics = {
 
 if __name__ == '__main__': 
     
-    data = pd.read_csv('./features/all/features_validation_HSV_GLCM.csv')
+    data = pd.read_csv('./features/all/features_validation_HSV_GLCM_shape.csv')
 
     category_mapping = {'nevus': 1, 'others': 0}
     y =  data['label'].astype('category').map(category_mapping)
