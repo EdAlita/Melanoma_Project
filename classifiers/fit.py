@@ -47,7 +47,7 @@ classifiers = [
                 # LogisticRegression(penalty='l2', max_iter=200),
                 # ExtraTreesClassifier(criterion='entropy', n_estimators=100, random_state=0),
                 # GaussianProcessClassifier(kernel=1.0 * RBF(1.0), random_state=0),
-                # KNeighborsClassifier(1),
+                KNeighborsClassifier(1),
                 SVC(kernel="rbf", C=1),
                 SVC(gamma='auto', C=1),   
                 # DecisionTreeClassifier(criterion='entropy', max_depth=20),
@@ -123,11 +123,11 @@ def eval_classifiers(X, y, **kwargs):
             mean_res.loc[clf_key, key] = np.mean(cv_scores[key])
             std_res.loc[clf_key, key] = np.std(cv_scores[key])
     
-    filename = f'classifiers/results/train_color_texture_shape_mean_SVC.csv'
+    filename = f'classifiers/results/train_color_texture_shape_mean_test.csv'
 
     mean_res.to_csv(filename)
 
-    filename = f'classifiers/results/train_colort_texture_shape_std_SVC.csv'
+    filename = f'classifiers/results/train_colort_texture_shape_std_test.csv'
 
     std_res.to_csv(filename)
     
