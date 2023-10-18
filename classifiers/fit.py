@@ -4,7 +4,7 @@ from time import gmtime, strftime
 
 from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, average_precision_score, f1_score, cohen_kappa_score, recall_score, log_loss
 from sklearn.metrics import make_scorer
-from sklearn.pipeline import make_pipeline
+from sklearn.pipeline import Pipeline
 from sklearn.model_selection import cross_validate, cross_val_predict
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.gaussian_process.kernels import RBF
@@ -32,12 +32,14 @@ from sklearn.svm import NuSVC
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.svm import SVC, NuSVC, LinearSVC
 from sklearn.mixture import GaussianMixture
-
+from sklearn.feature_selection import RFE
 from sklearn.model_selection import StratifiedKFold
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 import pandas as pd
 from tqdm import tqdm
 import re
+from sklearn.feature_selection import SelectKBest, mutual_info_classif
+
 
 time = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
 
@@ -47,7 +49,7 @@ classifiers = [
                 # LogisticRegression(penalty='l2', max_iter=200),
                 # ExtraTreesClassifier(criterion='entropy', n_estimators=100, random_state=0),
                 # GaussianProcessClassifier(kernel=1.0 * RBF(1.0), random_state=0),
-                KNeighborsClassifier(1),
+                # KNeighborsClassifier(1),
                 SVC(kernel="rbf", C=1),
                 SVC(gamma='auto', C=1),   
                 # DecisionTreeClassifier(criterion='entropy', max_depth=20),
@@ -107,11 +109,17 @@ def eval_classifiers(X, y, **kwargs):
     for i, clf in tqdm(enumerate(classifiers), desc="Classifiers are running...."):
         # ax = plt.subplot(len(classifiers) + 1, i)
         clf_key = str(clf)
-        clf = make_pipeline(StandardScaler(), clf)
+        
+        
+        clf = Pipeline(steps=[('scaler',StandardScaler()),
+                            ('selector', SelectKBest(mutual_info_classif,k=100)), 
+                            ('estimator',clf)])
+        
+        
 
         # Apply cross-validated model here.
         cv = StratifiedKFold(n_splits=10, shuffle=True)  # Specify the number of desired folds
-        cv_scores = cross_validate(clf, X, y, cv=cv, scoring=cv_metrics, return_train_score=False, return_estimator=True)  # Specify the list of scoring metrics
+        cv_scores = cross_validate(clf, X, y, cv=cv, scoring=cv_metrics, return_train_score=False, return_estimator=True, n_jobs=10)  # Specify the list of scoring metrics
         # print(cv_scores)
         # print(np.array(cv_scores.values()))
         estimators = cv_scores['estimator']
@@ -123,11 +131,11 @@ def eval_classifiers(X, y, **kwargs):
             mean_res.loc[clf_key, key] = np.mean(cv_scores[key])
             std_res.loc[clf_key, key] = np.std(cv_scores[key])
     
-    filename = f'classifiers/results/train_color_texture_shape_mean_test.csv'
+    filename = f'classifiers/results/train_color_texture_shape_mean_testFeatureS2.csv'
 
     mean_res.to_csv(filename)
 
-    filename = f'classifiers/results/train_colort_texture_shape_std_test.csv'
+    filename = f'classifiers/results/train_colort_texture_shape_std_testFeatureS2.csv'
 
     std_res.to_csv(filename)
     
