@@ -35,6 +35,7 @@ from sklearn.mixture import GaussianMixture
 from sklearn.feature_selection import RFE
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures
+from sklearn.decomposition import PCA
 import pandas as pd
 from tqdm import tqdm
 import re
@@ -52,14 +53,14 @@ classifiers = [
                 # KNeighborsClassifier(1),
                 SVC(kernel="rbf", C=1),
                 SVC(gamma='auto', C=1),   
-                # DecisionTreeClassifier(criterion='entropy', max_depth=20),
-                # RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
+                DecisionTreeClassifier(criterion='entropy', max_depth=20),
+                RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
                 # BernoulliNB(),
                 # OneClassSVM(),
                 # SGDClassifier(),
                 # RidgeClassifier(solver='lsqr'),
                 # PassiveAggressiveClassifier(),
-                # GradientBoostingClassifier(),
+                GradientBoostingClassifier(),
                 # RadiusNeighborsClassifier(),
                 # Lasso(),
                 # LinearSVC(),
@@ -112,14 +113,12 @@ def eval_classifiers(X, y, **kwargs):
         
         
         clf = Pipeline(steps=[('scaler',StandardScaler()),
-                            ('selector', SelectKBest(mutual_info_classif,k=200)), 
+                            ('pca', PCA()), 
                             ('estimator',clf)])
         
-        
-
         # Apply cross-validated model here.
-        cv = StratifiedKFold(n_splits=20, shuffle=True)  # Specify the number of desired folds
-        cv_scores = cross_validate(clf, X, y, cv=cv, scoring=cv_metrics, return_train_score=False, return_estimator=True, n_jobs=10)  # Specify the list of scoring metrics
+        cv = StratifiedKFold(n_splits=100, shuffle=True)  # Specify the number of desired folds
+        cv_scores = cross_validate(clf, X, y, cv=cv, scoring=cv_metrics, return_train_score=False, return_estimator=True, n_jobs=-1)  # Specify the list of scoring metrics
         # print(cv_scores)
         # print(np.array(cv_scores.values()))
         estimators = cv_scores['estimator']
