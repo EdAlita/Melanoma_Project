@@ -117,8 +117,8 @@ def eval_classifiers(X, y, **kwargs):
                             ('estimator',clf)])
         
         # Apply cross-validated model here.
-        cv = StratifiedKFold(n_splits=100, shuffle=True)  # Specify the number of desired folds
-        cv_scores = cross_validate(clf, X, y, cv=cv, scoring=cv_metrics, return_train_score=False, return_estimator=True, n_jobs=-1)  # Specify the list of scoring metrics
+        cv = StratifiedKFold(n_splits=10, shuffle=True)  # Specify the number of desired folds
+        cv_scores = cross_validate(clf, X, y, cv=cv, scoring=cv_metrics, return_train_score=False, return_estimator=True, n_jobs=-1,verbose=2)  # Specify the list of scoring metrics
         # print(cv_scores)
         # print(np.array(cv_scores.values()))
         estimators = cv_scores['estimator']
@@ -130,11 +130,11 @@ def eval_classifiers(X, y, **kwargs):
             mean_res.loc[clf_key, key] = np.mean(cv_scores[key])
             std_res.loc[clf_key, key] = np.std(cv_scores[key])
     
-    filename = f'classifiers/results/train_color_texture_shape_mean_testFeatureS2.csv'
+    filename = f'classifiers/results/train_color_texture_shape_mean_testFeatureS3.csv'
 
     mean_res.to_csv(filename)
 
-    filename = f'classifiers/results/train_colort_texture_shape_std_testFeatureS2.csv'
+    filename = f'classifiers/results/train_colort_texture_shape_std_testFeatureS3.csv'
 
     std_res.to_csv(filename)
     
