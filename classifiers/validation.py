@@ -48,7 +48,7 @@ if __name__ == '__main__':
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
     
-    with open('classifiers/models/2023-10-17_15:18:22_modelKn.pickle','rb') as fp:
+    with open('classifiers/models/2023-10-23_15:39:53_modelKn.pickle','rb') as fp:
         try:
             with tqdm(desc='Loading the saved classifier.....'):
                 estimators= pickle.load(fp)

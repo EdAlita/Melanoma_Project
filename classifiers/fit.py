@@ -53,14 +53,14 @@ classifiers = [
                 # KNeighborsClassifier(1),
                 SVC(kernel="rbf", C=1),
                 SVC(gamma='auto', C=1),   
-                DecisionTreeClassifier(criterion='entropy', max_depth=20),
-                RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
+                # DecisionTreeClassifier(criterion='entropy', max_depth=20),
+                # RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
                 # BernoulliNB(),
                 # OneClassSVM(),
                 # SGDClassifier(),
                 # RidgeClassifier(solver='lsqr'),
                 # PassiveAggressiveClassifier(),
-                GradientBoostingClassifier(),
+                # GradientBoostingClassifier(),
                 # RadiusNeighborsClassifier(),
                 # Lasso(),
                 # LinearSVC(),
@@ -113,11 +113,11 @@ def eval_classifiers(X, y, **kwargs):
         
         
         clf = Pipeline(steps=[('scaler',StandardScaler()),
-                            ('pca', PCA()), 
+                            ('pca', PCA(n_components=200)), 
                             ('estimator',clf)])
         
         # Apply cross-validated model here.
-        cv = StratifiedKFold(n_splits=10, shuffle=True)  # Specify the number of desired folds
+        cv = StratifiedKFold(n_splits=100, shuffle=True)  # Specify the number of desired folds
         cv_scores = cross_validate(clf, X, y, cv=cv, scoring=cv_metrics, return_train_score=False, return_estimator=True, n_jobs=-1,verbose=2)  # Specify the list of scoring metrics
         # print(cv_scores)
         # print(np.array(cv_scores.values()))
@@ -189,6 +189,6 @@ if __name__ == "__main__":
     
     
     with open(f'classifiers/models/{time}_modelKn.pickle', 'wb') as fp:
-        tqdm(pickle.dump(classifiers,fp),desc='Saving the model.....')
+        tqdm(pickle.dump(estimator,fp),desc='Saving the model.....')
         fp.close()
 
