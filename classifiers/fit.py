@@ -50,10 +50,10 @@ classifiers = [
                 # LogisticRegression(penalty='l2', max_iter=200),
                 # ExtraTreesClassifier(criterion='entropy', n_estimators=100, random_state=0),
                 # GaussianProcessClassifier(kernel=1.0 * RBF(1.0), random_state=0),
-                # KNeighborsClassifier(1),
+                KNeighborsClassifier(1),
                 # SVC(kernel="rbf", C=1),
                 # SVC(gamma='auto', C=1),   
-                # DecisionTreeClassifier(criterion='entropy', max_depth=20),
+                DecisionTreeClassifier(criterion='entropy', max_depth=20),
                 RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
                 # BernoulliNB(),
                 # OneClassSVM(),
@@ -130,11 +130,11 @@ def eval_classifiers(X, y, labels, **kwargs):
             mean_res.loc[clf_key, key] = np.mean(cv_scores[key])
             std_res.loc[clf_key, key] = np.std(cv_scores[key])
     
-    filename = f'classifiers/results/train_color_texture_shape_mean_rf_MC.csv'
+    filename = f'classifiers/results/train_color_texture_shape_mean_Kn_MC.csv'
 
     mean_res.to_csv(filename)
 
-    filename = f'classifiers/results/train_colort_texture_shape_std_rf_MC.csv'
+    filename = f'classifiers/results/train_colort_texture_shape_std_Kn_MC.csv'
 
     std_res.to_csv(filename)
     
@@ -151,51 +151,40 @@ if __name__ == "__main__":
         labels = [0, 1]
 
     else:
-        category_mapping = {'nev': 0, 'ack': 1, 'bcc': 2, 'bkl': 3, 'def': 4, 'mel':5, 'scc': 6, 'vac': 7}
-        labels = np.arange(8)
+
+        print(len(data))
+        data_exc = data[data['label'].isin(['mel', 'bcc', 'scc'])]
+        print(len(data_exc))
+
+        print(data_exc['label'])
+        category_mapping = {
+                            # 'nev': 0, 
+                            # 'ack': 1, 
+                            'bcc': 1, 
+                            # 'bkl': 3, 
+                            # 'def': 4, 
+                            'mel': 0, 
+                            'scc': 2, 
+                            # 'vac': 7
+                            }
+        labels = [0, 1, 2]
         
-    y =  data['label'].astype('category').map(category_mapping)
 
-    X = data.iloc[:, 1:-1]
+    y =  data_exc['label'].astype('category').map(category_mapping)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, shuffle=True, stratify=y)
+    X = data_exc.iloc[:, 1:-1]
+
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, shuffle=True, stratify=y)
     
     # Standardization
     scaler = StandardScaler()
-    X_train_ = scaler.fit_transform(X_train)
+    X_train_ = scaler.fit_transform(X)
 
-    X_test_ = scaler.transform(X_test)
 
-    estimators, cv_scorers = eval_classifiers(X_train_, y_train, labels = labels) 
-    cv = StratifiedKFold(n_splits=10, shuffle=True)  # Specify the number of desired folds
+    estimators, cv_scorers = eval_classifiers(X_train_, y, labels = labels) 
     
-    list_of_test_scores = []
     for ind, estimator in enumerate(estimators):
-        test_scores = {}
-        y_preds = estimator.predict(X_test_)
-        
-        for metric, scorer in cv_scorers.items():
-            test_scores[metric] = scorer._score_func(y_test, y_preds) # Doesn't work for multiclass. See notebook.
-        
-        list_of_test_scores.append(test_scores)
-
-    # Initialize a dictionary to store the sum of values for each key
-    sum_dict = {}
-
-    # Iterate over the list of dictionaries
-    for d in list_of_test_scores:
-        for key, value in d.items():
-            if key not in sum_dict:
-                sum_dict[key] = 0
-            sum_dict[key] += value
-
-    # Calculate the mean values
-    average_of_test_scores = {key: sum_val / len(list_of_test_scores) for key, sum_val in sum_dict.items()}
-
-    print(average_of_test_scores)
-    
-    
-    with open(f'classifiers/models/{time}_modelKn.pickle', 'wb') as fp:
-        tqdm(pickle.dump(estimator,fp),desc='Saving the model.....')
-        fp.close()
+        with open(f'classifiers/models/{time}_modelKn.pickle', 'wb') as fp:
+            tqdm(pickle.dump(estimator,fp),desc='Saving the model.....')
+            fp.close()
 
