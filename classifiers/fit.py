@@ -146,8 +146,31 @@ if __name__ == "__main__":
 
     data = pd.read_csv('./features/all/features_train_HSV_GLCM_shape_MC.csv')
 
-    category_mapping = {'nevus': 1, 'others': 0}
-    y =  data['label'].astype('category').map(category_mapping)
+    if len(data['label'].unique()) == 2:
+        category_mapping = {'nevus': 1, 'others': 0} # Should we switch?
+        labels = [0, 1]
+
+    else:
+
+        print(len(data))
+        data_exc = data[data['label'].isin(['mel', 'bcc', 'scc'])]
+        print(len(data_exc))
+
+        print(data_exc['label'])
+        category_mapping = {
+                            # 'nev': 0, 
+                            # 'ack': 1, 
+                            'bcc': 1, 
+                            # 'bkl': 3, 
+                            # 'def': 4, 
+                            'mel': 0, 
+                            'scc': 2, 
+                            # 'vac': 7
+                            }
+        labels = [0, 1, 2]
+        
+
+    y =  data_exc['label'].astype('category').map(category_mapping)
 
     X_train = data.iloc[:,1:-1]
     
@@ -181,7 +204,6 @@ if __name__ == "__main__":
     estimators = eval_classifiers(X_train_, y_train) 
     cv = StratifiedKFold(n_splits=10, shuffle=True)  # Specify the number of desired folds
     
-    list_of_test_scores = []
     for ind, estimator in enumerate(estimators):
         test_scores = {}
         y_preds = estimator.predict(X_val)
