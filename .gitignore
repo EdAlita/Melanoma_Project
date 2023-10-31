@@ -9,3 +9,5 @@ notebooks/coins.png
 notebooks/tmp_orig.png
 features/all/
 models/
+processors/*.png
+processors/*.jpg

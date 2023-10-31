@@ -43,7 +43,7 @@ import re
 from sklearn.feature_selection import SelectKBest, mutual_info_classif
 
 
-time = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
+time = strftime("%Y-%m-%d_%H-%M-%S", gmtime())
 
 classifiers = [
                 # LogisticRegression(solver='saga', penalty='elasticnet', l1_ratio=0.5, max_iter=200),
@@ -55,7 +55,7 @@ classifiers = [
                 SVC(kernel="rbf", C=1),
                 #SVC(gamma='auto', C=1),   
                 # DecisionTreeClassifier(criterion='entropy', max_depth=20),
-                # RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
+                RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
                 # BernoulliNB(),
                 # OneClassSVM(),
                 # SGDClassifier(),
@@ -91,19 +91,19 @@ def custom_score(y_true, y_pred, fn=accuracy_score):
     return fn(y_true, y_pred_binary)
 
 
-cv_metrics = {
-    'accuracy_score': make_scorer(accuracy_score),
-    #'cross_entropy_loss': make_scorer(log_loss),
-    #'average_precision_score' : make_scorer(average_precision_score, average='weighted'),
-    #'cohen_kappa_score' : make_scorer(cohen_kappa_score),
-    #'f1_score' : make_scorer(f1_score, average='weighted'),
-    #'recall_score' : make_scorer(recall_score, average='weighted'),
-    #'roc_auc_score': make_scorer(roc_auc_score, average='weighted'),
-    #'specificity_score' : make_scorer(recall_score, pos_label=0, average='binary'),
-}
 
-# You can try to list parameters of classifier here.
-def eval_classifiers(X, y, **kwargs):
+def eval_classifiers(X, y, labels, **kwargs):
+
+    cv_scorers = {
+    'accuracy_score': make_scorer(accuracy_score),
+    # 'cross_entropy_loss': make_scorer(log_loss, labels=labels),
+    # 'average_precision_score' : make_scorer(average_precision_score, average='weighted', pos_label =0),
+    'cohen_kappa_score' : make_scorer(cohen_kappa_score, labels=labels),
+    'f1_score' : make_scorer(f1_score, average='weighted', labels=labels),
+    'recall_score' : make_scorer(recall_score, average='weighted', labels=labels),
+    # 'roc_auc_score': make_scorer(roc_auc_score, average='weighted', labels=labels, multi_class = 'ovr'),
+    # 'specificity_score' : make_scorer(recall_score, pos_label=0, average='binary', labels=labels),
+    }
     # Define the list of scoring metrics
     mean_res = pd.DataFrame()
     std_res = pd.DataFrame()
@@ -130,24 +130,24 @@ def eval_classifiers(X, y, **kwargs):
             mean_res.loc[clf_key, key] = np.mean(cv_scores[key])
             std_res.loc[clf_key, key] = np.std(cv_scores[key])
     
-    filename = f'classifiers/results/train_color_texture_shape_mean_testFeature_125C_2.csv'
+    filename = f'classifiers/results/train_color_texture_shape_mean_testFeatureS3.csv'
 
     mean_res.to_csv(filename)
 
-    filename = f'classifiers/results/train_colort_texture_shape_std_testFeature_125C_2.csv'
+    filename = f'classifiers/results/train_colort_texture_shape_std_testFeatureS3.csv'
 
     std_res.to_csv(filename)
     
-    return estimators
+    return estimators, cv_scorers
 
 if __name__ == "__main__":
 
     from sklearn.model_selection import train_test_split
 
-    data = pd.read_csv('./features/all/features_train_HSV_GLCM_shape.csv')
+    data = pd.read_csv('./features/all/features_train_HSV_GLCM_shape_MC.csv')
 
-    category_mapping = {'nevus': 0, 'others': 1}
-    y_train =  data['label'].astype('category').map(category_mapping)
+    category_mapping = {'nevus': 1, 'others': 0}
+    y =  data['label'].astype('category').map(category_mapping)
 
     X_train = data.iloc[:,1:-1]
     
