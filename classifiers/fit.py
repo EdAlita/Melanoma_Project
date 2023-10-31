@@ -42,7 +42,7 @@ import re
 from sklearn.feature_selection import SelectKBest, mutual_info_classif
 
 
-time = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
+time = strftime("%Y-%m-%d_%H-%M-%S", gmtime())
 
 classifiers = [
                 # LogisticRegression(solver='saga', penalty='elasticnet', l1_ratio=0.5, max_iter=200),
@@ -51,10 +51,10 @@ classifiers = [
                 # ExtraTreesClassifier(criterion='entropy', n_estimators=100, random_state=0),
                 # GaussianProcessClassifier(kernel=1.0 * RBF(1.0), random_state=0),
                 # KNeighborsClassifier(1),
-                SVC(kernel="rbf", C=1),
-                SVC(gamma='auto', C=1),   
+                # SVC(kernel="rbf", C=1),
+                # SVC(gamma='auto', C=1),   
                 # DecisionTreeClassifier(criterion='entropy', max_depth=20),
-                # RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
+                RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
                 # BernoulliNB(),
                 # OneClassSVM(),
                 # SGDClassifier(),
@@ -90,19 +90,19 @@ def custom_score(y_true, y_pred, fn=accuracy_score):
     return fn(y_true, y_pred_binary)
 
 
-cv_metrics = {
-    'accuracy_score': make_scorer(accuracy_score),
-    'cross_entropy_loss': make_scorer(log_loss),
-    'average_precision_score' : make_scorer(average_precision_score, average='weighted'),
-    'cohen_kappa_score' : make_scorer(cohen_kappa_score),
-    'f1_score' : make_scorer(f1_score, average='weighted'),
-    'recall_score' : make_scorer(recall_score, average='weighted'),
-    'roc_auc_score': make_scorer(roc_auc_score, average='weighted'),
-    'specificity_score' : make_scorer(recall_score, pos_label=0, average='binary'),
-}
 
-# You can try to list parameters of classifier here.
-def eval_classifiers(X, y, **kwargs):
+def eval_classifiers(X, y, labels, **kwargs):
+
+    cv_scorers = {
+    'accuracy_score': make_scorer(accuracy_score),
+    # 'cross_entropy_loss': make_scorer(log_loss, labels=labels),
+    # 'average_precision_score' : make_scorer(average_precision_score, average='weighted', pos_label =0),
+    'cohen_kappa_score' : make_scorer(cohen_kappa_score, labels=labels),
+    'f1_score' : make_scorer(f1_score, average='weighted', labels=labels),
+    'recall_score' : make_scorer(recall_score, average='weighted', labels=labels),
+    # 'roc_auc_score': make_scorer(roc_auc_score, average='weighted', labels=labels, multi_class = 'ovr'),
+    # 'specificity_score' : make_scorer(recall_score, pos_label=0, average='binary', labels=labels),
+    }
     # Define the list of scoring metrics
     mean_res = pd.DataFrame()
     std_res = pd.DataFrame()
@@ -118,7 +118,7 @@ def eval_classifiers(X, y, **kwargs):
         
         # Apply cross-validated model here.
         cv = StratifiedKFold(n_splits=100, shuffle=True)  # Specify the number of desired folds
-        cv_scores = cross_validate(clf, X, y, cv=cv, scoring=cv_metrics, return_train_score=False, return_estimator=True, n_jobs=-1,verbose=2)  # Specify the list of scoring metrics
+        cv_scores = cross_validate(clf, X, y, cv=cv, scoring=cv_scorers, return_train_score=False, return_estimator=True, n_jobs=-1,verbose=2)  # Specify the list of scoring metrics
         # print(cv_scores)
         # print(np.array(cv_scores.values()))
         estimators = cv_scores['estimator']
@@ -130,23 +130,30 @@ def eval_classifiers(X, y, **kwargs):
             mean_res.loc[clf_key, key] = np.mean(cv_scores[key])
             std_res.loc[clf_key, key] = np.std(cv_scores[key])
     
-    filename = f'classifiers/results/train_color_texture_shape_mean_testFeatureS3.csv'
+    filename = f'classifiers/results/train_color_texture_shape_mean_rf_MC.csv'
 
     mean_res.to_csv(filename)
 
-    filename = f'classifiers/results/train_colort_texture_shape_std_testFeatureS3.csv'
+    filename = f'classifiers/results/train_colort_texture_shape_std_rf_MC.csv'
 
     std_res.to_csv(filename)
     
-    return estimators
+    return estimators, cv_scorers
 
 if __name__ == "__main__":
 
     from sklearn.model_selection import train_test_split
 
-    data = pd.read_csv('./features/all/features_train_HSV_GLCM_shape.csv')
+    data = pd.read_csv('./features/all/features_train_HSV_GLCM_shape_MC.csv')
 
-    category_mapping = {'nevus': 1, 'others': 0}
+    if len(data['label'].unique()) == 2:
+        category_mapping = {'nevus': 1, 'others': 0} # Should we switch?
+        labels = [0, 1]
+
+    else:
+        category_mapping = {'nev': 0, 'ack': 1, 'bcc': 2, 'bkl': 3, 'def': 4, 'mel':5, 'scc': 6, 'vac': 7}
+        labels = np.arange(8)
+        
     y =  data['label'].astype('category').map(category_mapping)
 
     X = data.iloc[:, 1:-1]
@@ -159,7 +166,7 @@ if __name__ == "__main__":
 
     X_test_ = scaler.transform(X_test)
 
-    estimators = eval_classifiers(X_train_, y_train) 
+    estimators, cv_scorers = eval_classifiers(X_train_, y_train, labels = labels) 
     cv = StratifiedKFold(n_splits=10, shuffle=True)  # Specify the number of desired folds
     
     list_of_test_scores = []
@@ -167,8 +174,8 @@ if __name__ == "__main__":
         test_scores = {}
         y_preds = estimator.predict(X_test_)
         
-        for metric, scorer in cv_metrics.items():
-            test_scores[metric] = scorer._score_func(y_test, y_preds)
+        for metric, scorer in cv_scorers.items():
+            test_scores[metric] = scorer._score_func(y_test, y_preds) # Doesn't work for multiclass. See notebook.
         
         list_of_test_scores.append(test_scores)
 

@@ -1,0 +1,3 @@
+,fit_time,score_time,test_accuracy_score,test_cohen_kappa_score,test_f1_score,test_recall_score
+"RandomForestClassifier(criterion='entropy', max_depth=20, max_features=1,
+                       n_estimators=10)",8.66027804851532,0.030742857456207275,0.5079994709927702,0.10161640401924353,0.40994478064496304,0.5079994709927702
