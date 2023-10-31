@@ -4,6 +4,7 @@ import pandas as pd
 from extractors.color import color
 from extractors.texture import glcm
 from extractors.shape import shape
+from extractors.texture import gloh
 
 def extract_features(stack, descriptors=None, save=True, feature_dir="features/all/"):
 
@@ -54,7 +55,7 @@ def extract_features(stack, descriptors=None, save=True, feature_dir="features/a
 
 
     if save:
-        filename = feature_dir + 'features_train_HSV_GLCM_shape.csv'
+        filename = feature_dir + 'features_train_HSV_GLCM_shape_gloh.csv'
         dataframe.to_csv(filename, index=False)
 
     return dataframe
@@ -86,4 +87,4 @@ if __name__ == '__main__':
 
     dataset = binaryDataset(color_space='HSV',root='data/train/')
 
-    dataframe = extract_features(dataset.ordered_images, descriptors=[color.color_statistics, color.color_hist_bins, glcm.calculate_glcms, shape.shape_measurements])
+    dataframe = extract_features(dataset.ordered_images, descriptors=[color.color_statistics, glcm.calculate_glcms, shape.shape_measurements, gloh.gloh_data])

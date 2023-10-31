@@ -1,0 +1,2 @@
+,fit_time,score_time,test_accuracy_score,test_cross_entropy_loss,test_average_precision_score,test_cohen_kappa_score,test_f1_score,test_recall_score,test_roc_auc_score,test_specificity_score
+SVC(C=1),7.646787760257721,0.08310954332351685,0.773807511327989,8.152803660915778,0.7038448875535991,0.5478793389743584,0.7734397005078439,0.773807511327989,0.7741895734895735,0.7522494172494172

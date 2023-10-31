@@ -34,8 +34,9 @@ from sklearn.svm import SVC, NuSVC, LinearSVC
 from sklearn.mixture import GaussianMixture
 from sklearn.feature_selection import RFE
 from sklearn.model_selection import StratifiedKFold
-from sklearn.preprocessing import StandardScaler, PolynomialFeatures
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures, MinMaxScaler
 from sklearn.decomposition import PCA
+from sklearn.linear_model import Lasso
 import pandas as pd
 from tqdm import tqdm
 import re
@@ -52,7 +53,7 @@ classifiers = [
                 # GaussianProcessClassifier(kernel=1.0 * RBF(1.0), random_state=0),
                 # KNeighborsClassifier(1),
                 SVC(kernel="rbf", C=1),
-                SVC(gamma='auto', C=1),   
+                #SVC(gamma='auto', C=1),   
                 # DecisionTreeClassifier(criterion='entropy', max_depth=20),
                 # RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
                 # BernoulliNB(),
@@ -78,7 +79,7 @@ classifiers = [
             ]
 
 # Define the threshold for binary classification
-threshold = 0.5
+threshold = 0.7
 
 # Define a custom scoring function
 def custom_score(y_true, y_pred, fn=accuracy_score):
@@ -92,13 +93,13 @@ def custom_score(y_true, y_pred, fn=accuracy_score):
 
 cv_metrics = {
     'accuracy_score': make_scorer(accuracy_score),
-    'cross_entropy_loss': make_scorer(log_loss),
-    'average_precision_score' : make_scorer(average_precision_score, average='weighted'),
-    'cohen_kappa_score' : make_scorer(cohen_kappa_score),
-    'f1_score' : make_scorer(f1_score, average='weighted'),
-    'recall_score' : make_scorer(recall_score, average='weighted'),
-    'roc_auc_score': make_scorer(roc_auc_score, average='weighted'),
-    'specificity_score' : make_scorer(recall_score, pos_label=0, average='binary'),
+    #'cross_entropy_loss': make_scorer(log_loss),
+    #'average_precision_score' : make_scorer(average_precision_score, average='weighted'),
+    #'cohen_kappa_score' : make_scorer(cohen_kappa_score),
+    #'f1_score' : make_scorer(f1_score, average='weighted'),
+    #'recall_score' : make_scorer(recall_score, average='weighted'),
+    #'roc_auc_score': make_scorer(roc_auc_score, average='weighted'),
+    #'specificity_score' : make_scorer(recall_score, pos_label=0, average='binary'),
 }
 
 # You can try to list parameters of classifier here.
@@ -112,13 +113,12 @@ def eval_classifiers(X, y, **kwargs):
         clf_key = str(clf)
         
         
-        clf = Pipeline(steps=[('scaler',StandardScaler()),
-                            ('pca', PCA(n_components=200)), 
+        clf = Pipeline(steps=[
                             ('estimator',clf)])
         
         # Apply cross-validated model here.
         cv = StratifiedKFold(n_splits=100, shuffle=True)  # Specify the number of desired folds
-        cv_scores = cross_validate(clf, X, y, cv=cv, scoring=cv_metrics, return_train_score=False, return_estimator=True, n_jobs=-1,verbose=2)  # Specify the list of scoring metrics
+        cv_scores = cross_validate(clf, X, y, cv=cv, scoring=cv_metrics, return_train_score=False, return_estimator=True, verbose=4)  # Specify the list of scoring metrics
         # print(cv_scores)
         # print(np.array(cv_scores.values()))
         estimators = cv_scores['estimator']
@@ -130,11 +130,11 @@ def eval_classifiers(X, y, **kwargs):
             mean_res.loc[clf_key, key] = np.mean(cv_scores[key])
             std_res.loc[clf_key, key] = np.std(cv_scores[key])
     
-    filename = f'classifiers/results/train_color_texture_shape_mean_testFeatureS3.csv'
+    filename = f'classifiers/results/train_color_texture_shape_mean_testFeature_125C_2.csv'
 
     mean_res.to_csv(filename)
 
-    filename = f'classifiers/results/train_colort_texture_shape_std_testFeatureS3.csv'
+    filename = f'classifiers/results/train_colort_texture_shape_std_testFeature_125C_2.csv'
 
     std_res.to_csv(filename)
     
@@ -146,31 +146,63 @@ if __name__ == "__main__":
 
     data = pd.read_csv('./features/all/features_train_HSV_GLCM_shape.csv')
 
-    category_mapping = {'nevus': 1, 'others': 0}
-    y =  data['label'].astype('category').map(category_mapping)
+    category_mapping = {'nevus': 0, 'others': 1}
+    y_train =  data['label'].astype('category').map(category_mapping)
 
-    X = data.iloc[:, 1:-1]
+    X_train = data.iloc[:,1:-1]
+    
+    data = pd.read_csv('./features/all/features_val_HSV_GLCM_shape.csv')
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, shuffle=True, stratify=y)
+    category_mapping = {'nevus': 0, 'others': 1}
+    y_val =  data['label'].astype('category').map(category_mapping)
+
+    X_val = data.iloc[:, 1:-1]
+    
+    data = pd.read_csv('./features/all/features_test_HSV_GLCM_shape.csv')
+    category_mapping = {'nevus': 0, 'others': 1}
+    y_tets =  data['label'].astype('category').map(category_mapping)
+    X_test = data.iloc[:, 1:-1]
     
     # Standardization
     scaler = StandardScaler()
     X_train_ = scaler.fit_transform(X_train)
-
-    X_test_ = scaler.transform(X_test)
-
+    X_val = scaler.transform(X_val)
+    X_test = scaler.transform(X_test)
+    
+    # PCA
+    pca = PCA(0.95)
+    pca.fit(X_train_)
+    X_train_ = pca.transform(X_train_)
+    X_val = pca.transform(X_val)
+    X_test = pca.transform(X_test)
+    
+    print(f'Principal components selection: {pca.n_components_}')
+    
     estimators = eval_classifiers(X_train_, y_train) 
     cv = StratifiedKFold(n_splits=10, shuffle=True)  # Specify the number of desired folds
     
     list_of_test_scores = []
     for ind, estimator in enumerate(estimators):
         test_scores = {}
-        y_preds = estimator.predict(X_test_)
+        y_preds = estimator.predict(X_val)
         
         for metric, scorer in cv_metrics.items():
-            test_scores[metric] = scorer._score_func(y_test, y_preds)
+            test_scores[metric] = scorer._score_func(y_val, y_preds)
         
         list_of_test_scores.append(test_scores)
+    
+    results = pd.DataFrame()
+       
+    for ind, estimator in enumerate(estimators):
+        test_scores = {}
+        y_preds = estimator.predict(X_test)
+    
+    results[estimator] = y_preds
+    filename = f'classifiers/results/binary_output_2.csv'
+
+    results.to_csv(filename)   
+        
+        
 
     # Initialize a dictionary to store the sum of values for each key
     sum_dict = {}
@@ -189,6 +221,6 @@ if __name__ == "__main__":
     
     
     with open(f'classifiers/models/{time}_modelKn.pickle', 'wb') as fp:
-        tqdm(pickle.dump(estimator,fp),desc='Saving the model.....')
+        tqdm(pickle.dump(estimators,fp),desc='Saving the model.....')
         fp.close()
 
