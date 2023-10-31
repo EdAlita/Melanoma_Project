@@ -53,9 +53,9 @@ classifiers = [
                 # GaussianProcessClassifier(kernel=1.0 * RBF(1.0), random_state=0),
                 # KNeighborsClassifier(1),
                 SVC(kernel="rbf", C=1),
-                #SVC(gamma='auto', C=1),   
+                # SVC(gamma='auto', C=1),   
                 # DecisionTreeClassifier(criterion='entropy', max_depth=20),
-                RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
+                # RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
                 # BernoulliNB(),
                 # OneClassSVM(),
                 # SGDClassifier(),
@@ -78,6 +78,10 @@ classifiers = [
                 # QuadraticDiscriminantAnalysis(),
             ]
 
+cv_metrics = {
+    'accuracy_score': make_scorer(accuracy_score)
+    }
+
 # Define the threshold for binary classification
 threshold = 0.7
 
@@ -92,18 +96,9 @@ def custom_score(y_true, y_pred, fn=accuracy_score):
 
 
 
-def eval_classifiers(X, y, labels, **kwargs):
+def eval_classifiers(X, y):
 
-    cv_scorers = {
-    'accuracy_score': make_scorer(accuracy_score),
-    # 'cross_entropy_loss': make_scorer(log_loss, labels=labels),
-    # 'average_precision_score' : make_scorer(average_precision_score, average='weighted', pos_label =0),
-    'cohen_kappa_score' : make_scorer(cohen_kappa_score, labels=labels),
-    'f1_score' : make_scorer(f1_score, average='weighted', labels=labels),
-    'recall_score' : make_scorer(recall_score, average='weighted', labels=labels),
-    # 'roc_auc_score': make_scorer(roc_auc_score, average='weighted', labels=labels, multi_class = 'ovr'),
-    # 'specificity_score' : make_scorer(recall_score, pos_label=0, average='binary', labels=labels),
-    }
+
     # Define the list of scoring metrics
     mean_res = pd.DataFrame()
     std_res = pd.DataFrame()
@@ -117,7 +112,7 @@ def eval_classifiers(X, y, labels, **kwargs):
                             ('estimator',clf)])
         
         # Apply cross-validated model here.
-        cv = StratifiedKFold(n_splits=100, shuffle=True)  # Specify the number of desired folds
+        cv = StratifiedKFold(n_splits=10, shuffle=True)  # Specify the number of desired folds
         cv_scores = cross_validate(clf, X, y, cv=cv, scoring=cv_metrics, return_train_score=False, return_estimator=True, verbose=4)  # Specify the list of scoring metrics
         # print(cv_scores)
         # print(np.array(cv_scores.values()))
@@ -138,56 +133,32 @@ def eval_classifiers(X, y, labels, **kwargs):
 
     std_res.to_csv(filename)
     
-    return estimators, cv_scorers
+    return estimators
 
 if __name__ == "__main__":
 
     from sklearn.model_selection import train_test_split
 
-    data = pd.read_csv('./features/all/features_train_HSV_GLCM_shape_MC.csv')
+    data = pd.read_csv('./features/all/features_train_HSV_GLCM_shape_gloh.csv')
 
-    if len(data['label'].unique()) == 2:
-        category_mapping = {'nevus': 1, 'others': 0} # Should we switch?
-        labels = [0, 1]
-
-    else:
-
-        print(len(data))
-        data_exc = data[data['label'].isin(['mel', 'bcc', 'scc'])]
-        print(len(data_exc))
-
-        print(data_exc['label'])
-        category_mapping = {
-                            # 'nev': 0, 
-                            # 'ack': 1, 
-                            'bcc': 1, 
-                            # 'bkl': 3, 
-                            # 'def': 4, 
-                            'mel': 0, 
-                            'scc': 2, 
-                            # 'vac': 7
-                            }
-        labels = [0, 1, 2]
-        
-
-    y =  data_exc['label'].astype('category').map(category_mapping)
-
+    category_mapping = {'nevus': 0, 'others': 1} # Should we switch?
+    y_train =  data['label'].astype('category').map(category_mapping)
     X_train = data.iloc[:,1:-1]
     
-    data = pd.read_csv('./features/all/features_val_HSV_GLCM_shape.csv')
+    data = pd.read_csv('./features/all/features_val_HSV_GLCM_shape_gloh.csv')
 
     category_mapping = {'nevus': 0, 'others': 1}
     y_val =  data['label'].astype('category').map(category_mapping)
 
     X_val = data.iloc[:, 1:-1]
     
-    data = pd.read_csv('./features/all/features_test_HSV_GLCM_shape.csv')
+    data = pd.read_csv('./features/all/features_test_HSV_GLCM_shape_gloh.csv')
     category_mapping = {'nevus': 0, 'others': 1}
     y_tets =  data['label'].astype('category').map(category_mapping)
     X_test = data.iloc[:, 1:-1]
     
-    # Standardization
-    scaler = StandardScaler()
+    
+    scaler = MinMaxScaler()
     X_train_ = scaler.fit_transform(X_train)
     X_val = scaler.transform(X_val)
     X_test = scaler.transform(X_test)
@@ -203,13 +174,13 @@ if __name__ == "__main__":
     
     estimators = eval_classifiers(X_train_, y_train) 
     cv = StratifiedKFold(n_splits=10, shuffle=True)  # Specify the number of desired folds
-    
+    list_of_test_scores = []
     for ind, estimator in enumerate(estimators):
         test_scores = {}
         y_preds = estimator.predict(X_val)
         
-        for metric, scorer in cv_metrics.items():
-            test_scores[metric] = scorer._score_func(y_val, y_preds)
+        for metric, metrics in cv_metrics.items():
+            test_scores[metric] = metrics._score_func(y_val, y_preds)
         
         list_of_test_scores.append(test_scores)
     
