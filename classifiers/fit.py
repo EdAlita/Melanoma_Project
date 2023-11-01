@@ -53,7 +53,7 @@ classifiers = [
                 KNeighborsClassifier(1),
                 # SVC(kernel="rbf", C=1),
                 # SVC(gamma='auto', C=1),   
-                DecisionTreeClassifier(criterion='entropy', max_depth=20),
+                # DecisionTreeClassifier(criterion='entropy', max_depth=20),
                 RandomForestClassifier(criterion='entropy', max_depth=20, n_estimators=10, max_features=1),
                 # BernoulliNB(),
                 # OneClassSVM(),
@@ -134,7 +134,7 @@ def eval_classifiers(X, y, labels, **kwargs):
 
     mean_res.to_csv(filename)
 
-    filename = f'classifiers/results/train_colort_texture_shape_std_Kn_MC.csv'
+    filename = f'classifiers/results/train_colort_texture_shape_std_Kn_MC_pca095.csv'
 
     std_res.to_csv(filename)
     
@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
     from sklearn.model_selection import train_test_split
 
-    data = pd.read_csv('./features/all/features_train_HSV_GLCM_shape_MC.csv')
+    data = pd.read_csv('./features/all/features_train_HSV_GLCM_shape_MC_pca095.csv')
 
     if len(data['label'].unique()) == 2:
         category_mapping = {'nevus': 1, 'others': 0} # Should we switch?
@@ -180,6 +180,10 @@ if __name__ == "__main__":
     scaler = StandardScaler()
     X_train_ = scaler.fit_transform(X)
 
+    # PCA
+    pca = PCA(0.95)
+    pca.fit(X_train_)
+    X_train_ = pca.transform(X_train_)
 
     estimators, cv_scorers = eval_classifiers(X_train_, y, labels = labels) 
     
