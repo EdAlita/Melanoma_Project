@@ -1,0 +1,3 @@
+,accuracy_score,cross_entropy_loss,average_precision_score,cohen_kappa_score,f1_score,recall_score,roc_auc_score,specificity_score
+"Pipeline(steps=[('scaler', MinMaxScaler()), ('pca', PCA(n_components=125)),
+                ('estimator', SVC(C=1, gamma='auto'))])",0.7435853530031615,9.242120660246881,0.6933850311563121,0.4877439197129682,0.737417783210998,0.7077938891765926,0.7442186604059906,0.7077938891765926

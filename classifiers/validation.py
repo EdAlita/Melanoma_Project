@@ -48,7 +48,7 @@ if __name__ == '__main__':
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
     
-    with open('classifiers/models/2023-10-23_15:39:53_modelKn.pickle','rb') as fp:
+    with open('classifiers/models/2023-10-29_11:47:31_modelKn.pickle','rb') as fp:
         try:
             with tqdm(desc='Loading the saved classifier.....'):
                 estimators= pickle.load(fp)
@@ -89,7 +89,7 @@ if __name__ == '__main__':
         for j, key in enumerate(average_of_test_scores.keys()):
             results.loc[clf_key, key] = average_of_test_scores[key]
 
-    filename = f'classifiers/results/validation_colort_texture_shape_mean_SVC.csv'
+    filename = f'classifiers/results/validation_colort_texture_shape_mean_SVC_125F.csv'
     
     results.to_csv(filename)
     
