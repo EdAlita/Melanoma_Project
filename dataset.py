@@ -87,13 +87,6 @@ class binaryDataset():
         if shuffle:
             np.random.shuffle(array)
 
-        if should_save:
-
-            save_path = f"{root}/numpy/" 
-            if save_path is None:
-                raise ValueError("Please provide a valid save path.")
-
-            np.save(save_path, np.array(data, dtype=object))
 
         return array
 

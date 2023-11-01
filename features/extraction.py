@@ -55,7 +55,7 @@ def extract_features(stack, descriptors=None, save=True, feature_dir="features/a
 
 
     if save:
-        filename = feature_dir + 'features_train_HSV_GLCM_shape_gloh.csv'
+        filename = feature_dir + 'features_test_HSV_GLCM_shape_gloh_mc_final.csv'
         dataframe.to_csv(filename, index=False)
 
     return dataframe
@@ -85,6 +85,7 @@ if __name__ == '__main__':
 
     # dataframe = extract_features(stack, descriptors=[color.color_statistics, color.color_hist_bins])
 
-    dataset = binaryDataset(color_space='HSV',root='data/train/')
+    dataset = binaryDataset(color_space='HSV',root='data/multiclass/test/')
 
     dataframe = extract_features(dataset.ordered_images, descriptors=[color.color_statistics, glcm.calculate_glcms, shape.shape_measurements, gloh.gloh_data])
+

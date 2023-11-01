@@ -11,5 +11,7 @@ features/all/
 models/
 processors/*.png
 processors/*.jpg
-features/extractors/shape/__pycache__/shape.cpython-310.pyc
-features/extractors/texture/__pycache__/gloh.cpython-310.pyc
+features/extractors/shape/__pycache__/
+features/extractors/texture/__pycache__/
+features/extractors/shape/__pycache__/
+features/extractors/texture/__pycache__/
